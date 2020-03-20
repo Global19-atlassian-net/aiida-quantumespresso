@@ -685,7 +685,19 @@ def parse_stdout(stdout, input_parameters, parser_options=None, parsed_xml=None)
                 try:
 
                     En = float(line.split('=')[1].split('Ry')[0]) * ry_to_ev
-                    E_acc = float(data_step[count + 2].split('<')[1].split('Ry')[0]) * ry_to_ev
+
+                    marker = 'estimated scf accuracy'
+                    for i in range(5):
+                        subline = data_step[count + i]
+                        if marker in subline:
+                            try:
+                                E_acc = float(subline.split('<')[1].split('Ry')[0]) * ry_to_ev
+                            except Exception:
+                                pass
+                            else:
+                                break
+                    else:
+                        raise KeyError('could not parse the line with `{}`'.format(marker))
 
                     for key, value in [['energy', En], ['energy_accuracy', E_acc]]:
                         trajectory_data.setdefault(key, []).append(value)
